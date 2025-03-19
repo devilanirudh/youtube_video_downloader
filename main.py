@@ -1,3 +1,122 @@
+# # # # import streamlit as st
+# # # # import os
+# # # # import yt_dlp
+# # # # import requests
+
+# # # # def test_url(url):
+# # # #     """Test if the URL is reachable"""
+# # # #     try:
+# # # #         response = requests.head(url, timeout=10)
+# # # #         return response.status_code == 200
+# # # #     except requests.RequestException as e:
+# # # #         return f"URL check failed: {str(e)}"
+
+# # # # def download_video(url, resolution, download_type, output_path):
+# # # #     try:
+# # # #         # Test URL first
+# # # #         url_status = test_url(url)
+# # # #         if url_status is not True:
+# # # #             st.error(f"URL validation failed: {url_status}")
+# # # #             return
+
+# # # #         # Create placeholder for progress
+# # # #         progress_bar = st.progress(0)
+# # # #         status_text = st.empty()
+
+# # # #         # Configure yt-dlp options
+# # # #         ydl_opts = {
+# # # #             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+# # # #             'format': f'bestvideo[height<={resolution[:-1]}]+bestaudio/best' if download_type == "Video" else 'bestaudio',
+# # # #             'merge_output_format': 'mp4' if download_type == "Video" else 'mp3',
+# # # #             'quiet': False,
+# # # #             'no_warnings': False,
+# # # #         }
+
+# # # #         # Progress callback function
+# # # #         def progress_hook(d):
+# # # #             if d['status'] == 'downloading':
+# # # #                 # Extract percentage from string and convert to float
+# # # #                 percent_str = d.get('_percent_str', '0%').strip().replace('%', '')
+# # # #                 try:
+# # # #                     percent = float(percent_str) / 100
+# # # #                     progress_bar.progress(min(percent, 1.0))  # Ensure it doesn't exceed 100%
+# # # #                     status_text.text(f"Downloading: {percent_str}% complete")
+# # # #                 except ValueError:
+# # # #                     status_text.text("Downloading: Processing...")
+# # # #             elif d['status'] == 'finished':
+# # # #                 progress_bar.progress(1.0)
+# # # #                 status_text.text("Download finished, processing...")
+
+# # # #         ydl_opts['progress_hooks'] = [progress_hook]
+
+# # # #         # Attempt download
+# # # #         st.write(f"Attempting to download from: {url}")
+# # # #         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+# # # #             info = ydl.extract_info(url, download=True)
+# # # #             filename = ydl.prepare_filename(info)
+# # # #             if download_type == "Audio":
+# # # #                 filename = os.path.splitext(filename)[0] + '.mp3'
+
+# # # #             st.success(f"Download completed! File saved to: {filename}")
+
+# # # #             # Offer file download
+# # # #             with open(filename, "rb") as file:
+# # # #                 st.download_button(
+# # # #                     label="Download File",
+# # # #                     data=file,
+# # # #                     file_name=os.path.basename(filename),
+# # # #                     mime="video/mp4" if download_type == "Video" else "audio/mp3"
+# # # #                 )
+
+# # # #     except yt_dlp.utils.DownloadError as e:
+# # # #         st.error(f"Download error: {str(e)}")
+# # # #     except Exception as e:
+# # # #         st.error(f"Unexpected error: {str(e)}")
+
+# # # # def main():
+# # # #     st.title("YouTube Downloader (Enhanced)")
+# # # #     st.write("Enter a YouTube URL and select your download preferences")
+
+# # # #     # Input fields
+# # # #     url = st.text_input("YouTube URL", "")
+# # # #     download_type = st.selectbox("Download Type", ["Video", "Audio"])
+    
+# # # #     resolution = None
+# # # #     if download_type == "Video":
+# # # #         resolution = st.selectbox(
+# # # #             "Resolution",
+# # # #             ["1080p", "720p", "480p", "360p", "240p", "144p"]
+# # # #         )
+
+# # # #     output_path = st.text_input("Output Directory", value=os.getcwd())
+
+# # # #     # Download button
+# # # #     if st.button("Download"):
+# # # #         if not url:
+# # # #             st.error("Please enter a YouTube URL")
+# # # #         elif not url.startswith(('http://', 'https://')):
+# # # #             st.error("Please enter a valid URL starting with http:// or https://")
+# # # #         elif not os.path.isdir(output_path):
+# # # #             st.error("Please enter a valid output directory")
+# # # #         else:
+# # # #             with st.spinner("Initializing download..."):
+# # # #                 download_video(url, resolution, download_type, output_path)
+
+# # # #     # Troubleshooting info
+# # # #     with st.expander("Troubleshooting"):
+# # # #         st.write("""
+# # # #         If you encounter issues:
+# # # #         1. Verify the URL is correct and public
+# # # #         2. Check your internet connection
+# # # #         3. Try a different YouTube video
+# # # #         4. Ensure yt-dlp is updated: `pip install --upgrade yt-dlp`
+# # # #         5. The video might be region-restricted or age-restricted
+# # # #         """)
+
+# # # # if __name__ == "__main__":
+# # # #     main()
+
+
 # # # import streamlit as st
 # # # import os
 # # # import yt_dlp
@@ -11,19 +130,17 @@
 # # #     except requests.RequestException as e:
 # # #         return f"URL check failed: {str(e)}"
 
-# # # def download_video(url, resolution, download_type, output_path):
+# # # def download_video(url, resolution, download_type):
 # # #     try:
-# # #         # Test URL first
 # # #         url_status = test_url(url)
 # # #         if url_status is not True:
 # # #             st.error(f"URL validation failed: {url_status}")
 # # #             return
 
-# # #         # Create placeholder for progress
+# # #         output_path = os.getcwd()
 # # #         progress_bar = st.progress(0)
 # # #         status_text = st.empty()
 
-# # #         # Configure yt-dlp options
 # # #         ydl_opts = {
 # # #             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
 # # #             'format': f'bestvideo[height<={resolution[:-1]}]+bestaudio/best' if download_type == "Video" else 'bestaudio',
@@ -32,14 +149,12 @@
 # # #             'no_warnings': False,
 # # #         }
 
-# # #         # Progress callback function
 # # #         def progress_hook(d):
 # # #             if d['status'] == 'downloading':
-# # #                 # Extract percentage from string and convert to float
 # # #                 percent_str = d.get('_percent_str', '0%').strip().replace('%', '')
 # # #                 try:
 # # #                     percent = float(percent_str) / 100
-# # #                     progress_bar.progress(min(percent, 1.0))  # Ensure it doesn't exceed 100%
+# # #                     progress_bar.progress(min(percent, 1.0))
 # # #                     status_text.text(f"Downloading: {percent_str}% complete")
 # # #                 except ValueError:
 # # #                     status_text.text("Downloading: Processing...")
@@ -49,7 +164,6 @@
 
 # # #         ydl_opts['progress_hooks'] = [progress_hook]
 
-# # #         # Attempt download
 # # #         st.write(f"Attempting to download from: {url}")
 # # #         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
 # # #             info = ydl.extract_info(url, download=True)
@@ -57,16 +171,15 @@
 # # #             if download_type == "Audio":
 # # #                 filename = os.path.splitext(filename)[0] + '.mp3'
 
-# # #             st.success(f"Download completed! File saved to: {filename}")
+# # #         st.success(f"Download completed! File saved to: {filename}")
 
-# # #             # Offer file download
-# # #             with open(filename, "rb") as file:
-# # #                 st.download_button(
-# # #                     label="Download File",
-# # #                     data=file,
-# # #                     file_name=os.path.basename(filename),
-# # #                     mime="video/mp4" if download_type == "Video" else "audio/mp3"
-# # #                 )
+# # #         with open(filename, "rb") as file:
+# # #             st.download_button(
+# # #                 label="Download File",
+# # #                 data=file,
+# # #                 file_name=os.path.basename(filename),
+# # #                 mime="video/mp4" if download_type == "Video" else "audio/mp3"
+# # #             )
 
 # # #     except yt_dlp.utils.DownloadError as e:
 # # #         st.error(f"Download error: {str(e)}")
@@ -76,8 +189,8 @@
 # # # def main():
 # # #     st.title("YouTube Downloader (Enhanced)")
 # # #     st.write("Enter a YouTube URL and select your download preferences")
+# # #     st.write(f"Files will be saved to: {os.getcwd()}")
 
-# # #     # Input fields
 # # #     url = st.text_input("YouTube URL", "")
 # # #     download_type = st.selectbox("Download Type", ["Video", "Audio"])
     
@@ -88,39 +201,40 @@
 # # #             ["1080p", "720p", "480p", "360p", "240p", "144p"]
 # # #         )
 
-# # #     output_path = st.text_input("Output Directory", value=os.getcwd())
-
-# # #     # Download button
 # # #     if st.button("Download"):
 # # #         if not url:
 # # #             st.error("Please enter a YouTube URL")
 # # #         elif not url.startswith(('http://', 'https://')):
 # # #             st.error("Please enter a valid URL starting with http:// or https://")
-# # #         elif not os.path.isdir(output_path):
-# # #             st.error("Please enter a valid output directory")
 # # #         else:
 # # #             with st.spinner("Initializing download..."):
-# # #                 download_video(url, resolution, download_type, output_path)
+# # #                 download_video(url, resolution, download_type)
 
-# # #     # Troubleshooting info
 # # #     with st.expander("Troubleshooting"):
 # # #         st.write("""
 # # #         If you encounter issues:
 # # #         1. Verify the URL is correct and public
 # # #         2. Check your internet connection
 # # #         3. Try a different YouTube video
-# # #         4. Ensure yt-dlp is updated: `pip install --upgrade yt-dlp`
-# # #         5. The video might be region-restricted or age-restricted
+# # #         4. The video might be region-restricted or age-restricted
 # # #         """)
 
 # # # if __name__ == "__main__":
+# # #     st.sidebar.title("How to Use")
+# # #     st.sidebar.write("""
+# # #         1. Enter a YouTube URL
+# # #         2. Select download type and resolution
+# # #         3. Click Download
+# # #         4. Use the Download File button to save locally
+# # #     """)
+    
 # # #     main()
-
 
 # # import streamlit as st
 # # import os
 # # import yt_dlp
 # # import requests
+# # import subprocess
 
 # # def test_url(url):
 # #     """Test if the URL is reachable"""
@@ -129,6 +243,14 @@
 # #         return response.status_code == 200
 # #     except requests.RequestException as e:
 # #         return f"URL check failed: {str(e)}"
+
+# # def check_ffmpeg():
+# #     """Check if ffmpeg is installed"""
+# #     try:
+# #         subprocess.run(['ffmpeg', '-version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# #         return True
+# #     except (subprocess.CalledProcessError, FileNotFoundError):
+# #         return False
 
 # # def download_video(url, resolution, download_type):
 # #     try:
@@ -141,12 +263,22 @@
 # #         progress_bar = st.progress(0)
 # #         status_text = st.empty()
 
+# #         # Check for ffmpeg
+# #         if not check_ffmpeg():
+# #             st.warning("ffmpeg is not installed. Using fallback format.")
+# #             format_str = 'best' if download_type == "Video" else 'bestaudio'
+# #         else:
+# #             format_str = f'bestvideo[height<={resolution[:-1]}]+bestaudio/best' if download_type == "Video" else 'bestaudio'
+
 # #         ydl_opts = {
 # #             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-# #             'format': f'bestvideo[height<={resolution[:-1]}]+bestaudio/best' if download_type == "Video" else 'bestaudio',
+# #             'format': format_str,
 # #             'merge_output_format': 'mp4' if download_type == "Video" else 'mp3',
 # #             'quiet': False,
 # #             'no_warnings': False,
+# #             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+# #             'referer': 'https://www.youtube.com/',
+# #             'verbose': True,  # For debugging
 # #         }
 
 # #         def progress_hook(d):
@@ -183,6 +315,7 @@
 
 # #     except yt_dlp.utils.DownloadError as e:
 # #         st.error(f"Download error: {str(e)}")
+# #         st.write("This might be due to region restrictions, age restrictions, or YouTube rate limiting.")
 # #     except Exception as e:
 # #         st.error(f"Unexpected error: {str(e)}")
 
@@ -213,10 +346,11 @@
 # #     with st.expander("Troubleshooting"):
 # #         st.write("""
 # #         If you encounter issues:
-# #         1. Verify the URL is correct and public
-# #         2. Check your internet connection
+# #         1. Verify the URL is correct and public (test locally with yt-dlp)
+# #         2. Check if the video is region-restricted or age-restricted
 # #         3. Try a different YouTube video
-# #         4. The video might be region-restricted or age-restricted
+# #         4. Ensure internet connectivity
+# #         5. Higher resolutions may require ffmpeg (should be installed now)
 # #         """)
 
 # # if __name__ == "__main__":
@@ -264,7 +398,8 @@
 #         status_text = st.empty()
 
 #         # Check for ffmpeg
-#         if not check_ffmpeg():
+#         ffmpeg_available = check_ffmpeg()
+#         if not ffmpeg_available:
 #             st.warning("ffmpeg is not installed. Using fallback format.")
 #             format_str = 'best' if download_type == "Video" else 'bestaudio'
 #         else:
@@ -278,7 +413,11 @@
 #             'no_warnings': False,
 #             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 #             'referer': 'https://www.youtube.com/',
-#             'verbose': True,  # For debugging
+#             'verbose': True,
+#             'noplaylist': True,  # Avoid playlists
+#             'retries': 10,       # Retry on failure
+#             'fragment_retries': 10,
+#             'ignoreerrors': False,
 #         }
 
 #         def progress_hook(d):
@@ -293,15 +432,29 @@
 #             elif d['status'] == 'finished':
 #                 progress_bar.progress(1.0)
 #                 status_text.text("Download finished, processing...")
+#             elif d['status'] == 'error':
+#                 status_text.text("Download failed.")
 
 #         ydl_opts['progress_hooks'] = [progress_hook]
 
 #         st.write(f"Attempting to download from: {url}")
 #         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-#             info = ydl.extract_info(url, download=True)
-#             filename = ydl.prepare_filename(info)
-#             if download_type == "Audio":
-#                 filename = os.path.splitext(filename)[0] + '.mp3'
+#             try:
+#                 info = ydl.extract_info(url, download=True)
+#                 filename = ydl.prepare_filename(info)
+#                 if download_type == "Audio":
+#                     filename = os.path.splitext(filename)[0] + '.mp3'
+#             except yt_dlp.utils.DownloadError as e:
+#                 # Fallback to simpler format if merging fails
+#                 if ffmpeg_available:
+#                     st.warning("Failed with best quality. Trying fallback format 'best'...")
+#                     ydl_opts['format'] = 'best' if download_type == "Video" else 'bestaudio'
+#                     info = ydl.extract_info(url, download=True)
+#                     filename = ydl.prepare_filename(info)
+#                     if download_type == "Audio":
+#                         filename = os.path.splitext(filename)[0] + '.mp3'
+#                 else:
+#                     raise e
 
 #         st.success(f"Download completed! File saved to: {filename}")
 
@@ -315,7 +468,7 @@
 
 #     except yt_dlp.utils.DownloadError as e:
 #         st.error(f"Download error: {str(e)}")
-#         st.write("This might be due to region restrictions, age restrictions, or YouTube rate limiting.")
+#         st.write("Possible causes: region/age restriction, rate limiting, or video unavailable.")
 #     except Exception as e:
 #         st.error(f"Unexpected error: {str(e)}")
 
@@ -346,11 +499,11 @@
 #     with st.expander("Troubleshooting"):
 #         st.write("""
 #         If you encounter issues:
-#         1. Verify the URL is correct and public (test locally with yt-dlp)
+#         1. Test the URL locally with 'yt-dlp -v <url>'
 #         2. Check if the video is region-restricted or age-restricted
-#         3. Try a different YouTube video
+#         3. Try a different public YouTube video (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)
 #         4. Ensure internet connectivity
-#         5. Higher resolutions may require ffmpeg (should be installed now)
+#         5. Higher resolutions may require ffmpeg (should be installed)
 #         """)
 
 # if __name__ == "__main__":
@@ -386,7 +539,7 @@ def check_ffmpeg():
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
-def download_video(url, resolution, download_type):
+def download_video(url, resolution, download_type, cookies_file=None):
     try:
         url_status = test_url(url)
         if url_status is not True:
@@ -397,7 +550,6 @@ def download_video(url, resolution, download_type):
         progress_bar = st.progress(0)
         status_text = st.empty()
 
-        # Check for ffmpeg
         ffmpeg_available = check_ffmpeg()
         if not ffmpeg_available:
             st.warning("ffmpeg is not installed. Using fallback format.")
@@ -414,11 +566,14 @@ def download_video(url, resolution, download_type):
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'referer': 'https://www.youtube.com/',
             'verbose': True,
-            'noplaylist': True,  # Avoid playlists
-            'retries': 10,       # Retry on failure
+            'noplaylist': True,
+            'retries': 10,
             'fragment_retries': 10,
             'ignoreerrors': False,
         }
+
+        if cookies_file:
+            ydl_opts['cookiefile'] = cookies_file.name
 
         def progress_hook(d):
             if d['status'] == 'downloading':
@@ -445,7 +600,6 @@ def download_video(url, resolution, download_type):
                 if download_type == "Audio":
                     filename = os.path.splitext(filename)[0] + '.mp3'
             except yt_dlp.utils.DownloadError as e:
-                # Fallback to simpler format if merging fails
                 if ffmpeg_available:
                     st.warning("Failed with best quality. Trying fallback format 'best'...")
                     ydl_opts['format'] = 'best' if download_type == "Video" else 'bestaudio'
@@ -469,6 +623,7 @@ def download_video(url, resolution, download_type):
     except yt_dlp.utils.DownloadError as e:
         st.error(f"Download error: {str(e)}")
         st.write("Possible causes: region/age restriction, rate limiting, or video unavailable.")
+        st.write("Try uploading a cookies file if the video is age-restricted.")
     except Exception as e:
         st.error(f"Unexpected error: {str(e)}")
 
@@ -487,6 +642,8 @@ def main():
             ["1080p", "720p", "480p", "360p", "240p", "144p"]
         )
 
+    cookies_file = st.file_uploader("Upload Cookies File (optional, for age-restricted videos)", type=["txt"])
+
     if st.button("Download"):
         if not url:
             st.error("Please enter a YouTube URL")
@@ -494,7 +651,12 @@ def main():
             st.error("Please enter a valid URL starting with http:// or https://")
         else:
             with st.spinner("Initializing download..."):
-                download_video(url, resolution, download_type)
+                if cookies_file:
+                    with open("cookies.txt", "wb") as f:
+                        f.write(cookies_file.read())
+                    download_video(url, resolution, download_type, cookies_file="cookies.txt")
+                else:
+                    download_video(url, resolution, download_type)
 
     with st.expander("Troubleshooting"):
         st.write("""
@@ -502,8 +664,10 @@ def main():
         1. Test the URL locally with 'yt-dlp -v <url>'
         2. Check if the video is region-restricted or age-restricted
         3. Try a different public YouTube video (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)
-        4. Ensure internet connectivity
-        5. Higher resolutions may require ffmpeg (should be installed)
+        4. For age-restricted videos, export cookies from your browser:
+           - Use a browser extension like "Get cookies.txt" (Chrome/Firefox)
+           - Log into YouTube, export cookies, and upload the .txt file
+        5. Ensure internet connectivity
         """)
 
 if __name__ == "__main__":
@@ -511,8 +675,9 @@ if __name__ == "__main__":
     st.sidebar.write("""
         1. Enter a YouTube URL
         2. Select download type and resolution
-        3. Click Download
-        4. Use the Download File button to save locally
+        3. (Optional) Upload a cookies file for restricted videos
+        4. Click Download
+        5. Use the Download File button to save locally
     """)
     
     main()
